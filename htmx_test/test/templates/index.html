@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>htmxを試す</title>
+    </head>
+
+    <body>
+        <p>151匹リストを取得</p>
+        <button hx-get="/list/" hx-trigger="click" hx-target="#contents">151匹を取得</button>
+
+        <p>151匹リスト</p>
+        <div id="contents"></div>
+
+        <p>ポケモン詳細</p>
+        <div id="detail"></div>
+
+        <!-- htmx -->
+        <script src="https://unpkg.com/htmx.org@1.6.0"></script>
+        <!-- スクリプト -->
+        <script>
+            // 通信後に発火
+            document.body.addEventListener('htmx:afterRequest', (event) => {
+                const response = event.detail.xhr.response;
+                const pokemonList = JSON.parse(response).pokemon_names;
+    
+                // リストにポケモン名を追加
+                const div = document.getElementById('contents');
+                // リセット
+                div.innerHTML = '';
+    
+                // ボタン要素を作成
+                pokemonList.forEach(pokemon => {
+                    const button = document.createElement('button');
+                    button.textContent = pokemon;
+
+                    button.setAttribute('hx-get', `/detail/${pokemon}/`);
+                    button.setAttribute('hx-trigger', 'click');
+                    button.setAttribute('hx-target', '#detail');
+                    button.setAttribute('hx-swap', 'innerHTML');
+
+                    div.appendChild(button);
+
+                    // 動的に作成したDOM要素はバインドされてない為、要素を追加したことをhtmxへ伝える必要がある。
+                    htmx.process(button)
+                });
+            });
+        </script>
+    </body>
+</html>
